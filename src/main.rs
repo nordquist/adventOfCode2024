@@ -5,11 +5,12 @@ use std::path::Path;
 fn main() {
     day_one_part_one();
     day_one_part_two();
+    day_two_part_one();
 }
 
 fn day_one_part_one() {
     match import_locations() {
-        Ok((mut list1,mut list2)) => {
+        Ok((mut list1, mut list2)) => {
             list1.sort();
             list2.sort();
             let distances: Vec<_> = list1
@@ -18,8 +19,8 @@ fn day_one_part_one() {
                 .map(|(x, y)| (x as i32 - y as i32).abs() as u32)
                 .collect();
             let sum: u32 = distances.iter().sum();
-            println!("The total distance is: {}", sum);   
-        },
+            println!("The total distance is: {}", sum);
+        }
         Err(e) => {
             println!("An error occurred while importing locations: {}", e);
             std::process::exit(1);
@@ -36,25 +37,53 @@ fn day_one_part_two() {
                 sum += i * n as i32;
             }
             println!("The similarity score is: {}", sum);
-        },
+        }
         Err(e) => {
             println!("An error occurred while importing locations: {}", e);
             std::process::exit(1);
         }
-    }    
+    }
+}
+
+fn day_two_part_one() {
+    let reports = import_reports();
+    let mut safety = vec![true; reports.len()];
+
+    for (index, report) in reports.iter().enumerate() {
+        let direction = report[0] - report[1];
+        let mut prev_value: Option<i32> = None;        
+        for &value in report {
+            if let Some(prev) = prev_value {
+                let diff = (prev - value).abs();
+                if diff > 3 || diff == 0 {
+                    safety[index] = false;
+                    break;
+                }
+                else if direction < 0 && (prev - value) > 0 {
+                    safety[index] = false;
+                    break;                    
+                }
+                else if direction > 0 && (prev - value) < 0 {
+                    safety[index] = false;
+                    break;                         
+                }
+            }
+            prev_value = Some(value);
+        }
+    }
+    println!("Number of safe reports: {}", safety.iter().filter(|&&s| s == true).count()); 
 }
 
 fn import_locations() -> io::Result<(Vec<i32>, Vec<i32>)> {
-
     let mut list1: Vec<i32> = Vec::new();
     let mut list2: Vec<i32> = Vec::new();
-    let path = Path::new("src/input");
+    let path = Path::new("src/input_day_one");
     let display = path.display();
 
     let file = match File::open(&path) {
         Err(err) => panic!("Location file missing {}: {}", display, err),
-        Ok(file) => file
-    };    
+        Ok(file) => file,
+    };
 
     let reader = BufReader::new(file);
 
@@ -70,4 +99,24 @@ fn import_locations() -> io::Result<(Vec<i32>, Vec<i32>)> {
     }
 
     Ok((list1, list2))
+}
+
+fn import_reports() -> Vec<Vec<i32>> {
+    let path = Path::new("src/input_day_two");
+    let file = File::open(&path).expect("Could not open file");
+    let reader = BufReader::new(file);
+    
+    let mut reports = Vec::new();
+
+    for line in reader.lines() {
+        if let Ok(line) = line {
+            let report: Vec<i32> = line
+                .split_whitespace()
+                .map(|s| s.parse().expect("Parse error"))
+                .collect();
+            reports.push(report);
+        }
+    }
+    
+    reports
 }
