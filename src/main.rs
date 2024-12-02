@@ -1,11 +1,14 @@
+use core::result::Result::Ok;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
 
 fn main() {
+    day_two_part_two();
     day_one_part_one();
     day_one_part_two();
     day_two_part_one();
+    day_two_part_two();
 }
 
 fn day_one_part_one() {
@@ -72,6 +75,61 @@ fn day_two_part_one() {
         }
     }
     println!("Number of safe reports: {}", safety.iter().filter(|&&s| s == true).count()); 
+}
+
+fn day_two_part_two() {
+    let reports = import_reports();
+    let mut safe_reports: u16 = 0 as u16;
+    let mut safed_reports: u16 = 0 as u16;
+
+    for report in &reports {
+        match check_report_safety(report.to_vec()) {
+            Ok(unsafe_tuples) => {
+                if unsafe_tuples.len() < 1 {
+                    safe_reports = safe_reports+1;
+                }
+                else if unsafe_tuples.len() >= 1 {
+                    for index in 0..report.len() {
+                        let mut new_report = report.clone();
+                        new_report.remove(index);
+                        match check_report_safety(new_report) {
+                            Ok(new_unsafe_tuples) => {
+                                if new_unsafe_tuples.len() < 1 {
+                                    safed_reports = safed_reports+1;
+                                    break;
+                                }
+                            },
+                            Err(e) => {
+                                println!("An error occurred while re-checking: {}", e);
+                                std::process::exit(1);
+                            }
+                        }               
+                    }       
+                }
+            }
+            Err(e) => {
+                println!("An error occurred: {}", e);
+                std::process::exit(1);
+            }
+        }
+    }
+    println!("Number of safe reports: {} + safe reports after damper {}, total safe reports: {}", safe_reports, safed_reports, (safe_reports+safed_reports)); 
+}
+
+fn check_report_safety(report: Vec<i32>) -> io::Result<Vec<(i32, i32)>> {
+    let mut unsafe_tuples: Vec<(i32, i32)> = Vec::new();
+    let direction = report[0] - report[1];
+    let mut prev_value: Option<i32> = None;
+    for (index, &value) in report.iter().enumerate() {
+        if let Some(prev) = prev_value {
+            let diff = (prev - value).abs();
+            if (diff > 3 || diff == 0) || (direction < 0 && (prev - value) > 0) || (direction > 0 && (prev - value) < 0) {
+                unsafe_tuples.push(((index-1).try_into().unwrap(),prev));
+            }
+        }
+        prev_value = Some(value);
+    }
+    Ok(unsafe_tuples)
 }
 
 fn import_locations() -> io::Result<(Vec<i32>, Vec<i32>)> {
