@@ -80,8 +80,6 @@ fn day_two_part_one() {
 fn day_two_part_two() {
     let reports = import_reports();
     let mut safe_reports: u16 = 0 as u16;
-    let mut safed_reports: u16 = 0 as u16;
-
     for report in &reports {
         match check_report_safety(report.to_vec()) {
             Ok(unsafe_tuples) => {
@@ -95,7 +93,7 @@ fn day_two_part_two() {
                         match check_report_safety(new_report) {
                             Ok(new_unsafe_tuples) => {
                                 if new_unsafe_tuples.len() < 1 {
-                                    safed_reports = safed_reports+1;
+                                    safe_reports = safe_reports+1;
                                     break;
                                 }
                             },
@@ -113,7 +111,7 @@ fn day_two_part_two() {
             }
         }
     }
-    println!("Number of safe reports: {} + safe reports after damper {}, total safe reports: {}", safe_reports, safed_reports, (safe_reports+safed_reports)); 
+    println!("Number of safe reports after damper {}", safe_reports); 
 }
 
 fn check_report_safety(report: Vec<i32>) -> io::Result<Vec<(i32, i32)>> {
