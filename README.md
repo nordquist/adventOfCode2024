@@ -1,5 +1,8 @@
 # adventOfCode2024
 
+> Join me @
+[4245165-8f650c4f](https://adventofcode.com/2024/leaderboard/private)
+
 Day 1 - Part 1
 ```rust
 fn day_one_part_one() {
