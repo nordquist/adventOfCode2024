@@ -1,14 +1,17 @@
 use core::result::Result::Ok;
 use std::fs::File;
+use std::io::prelude::*;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
+use regex::Regex;
 
 fn main() {
-    day_two_part_two();
-    day_one_part_one();
-    day_one_part_two();
-    day_two_part_one();
-    day_two_part_two();
+    // day_two_part_two();
+    // day_one_part_one();
+    // day_one_part_two();
+    // day_two_part_one();
+    // day_two_part_two();
+    day_three_part_one();
 }
 
 fn day_one_part_one() {
@@ -114,6 +117,31 @@ fn day_two_part_two() {
     println!("Number of safe reports after damper {}", safe_reports); 
 }
 
+fn day_three_part_one() {
+    match import_multiplications() {
+        Ok(contents) => {
+            let re = Regex::new(r"mul\(\s*(-?\d+)\s*,\s*(-?\d+)\s*\)").unwrap();
+            let pairs: Vec<_> = re.captures_iter(&contents)
+                .filter_map(|cap| {
+                    let x = cap[1].parse::<i32>();
+                    let y = cap[2].parse::<i32>();
+                    match (x, y) {
+                        (Ok(x), Ok(y)) => Some((x, y)),
+                        _ => None,
+                    }
+                })
+                .collect();
+           
+            let mut sum_of_products  = 0;
+            for pair in &pairs {
+                sum_of_products = sum_of_products + (pair.0 * pair.1);
+            }
+            println!("Sum of products: {:?}", sum_of_products);
+        },
+        Err(e) => println!("Error reading the file: {}", e),
+    }
+}
+
 fn check_report_safety(report: Vec<i32>) -> io::Result<Vec<(i32, i32)>> {
     let mut unsafe_tuples: Vec<(i32, i32)> = Vec::new();
     let direction = report[0] - report[1];
@@ -175,4 +203,12 @@ fn import_reports() -> Vec<Vec<i32>> {
     }
     
     reports
+}
+
+fn import_multiplications() -> io::Result<String> {
+    let path = Path::new("src/input_day_three");
+    let mut file = File::open(&path).expect("Could not open file");
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+    Ok(contents)
 }
