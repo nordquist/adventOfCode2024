@@ -193,7 +193,7 @@ fn day_four_part_one() {
 
     let mut criteria = [0; 4];
 
-    let count = (0..matrix[0].len() as isize)
+    let occurrences = (0..matrix[0].len() as isize)
         .flat_map(|x| (0..matrix.len() as isize)
             .map(move |y| (x, y)))
         .flat_map(|(x, y)| {
@@ -212,8 +212,9 @@ fn day_four_part_one() {
             });
             criteria.fill_with(|| iter.next().unwrap());
             &criteria == b"XMAS" || &criteria == b"SAMX"
-        })
-    .count();
+        });
+    
+    let count = occurrences.count();
     println!("0x78A5A051: {:?}", count);
 }
 
