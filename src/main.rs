@@ -191,10 +191,11 @@ fn day_four_part_one() {
         .split(|&c| c == b'\n')
         .collect::<Vec<_>>();
 
-    let mut word = [0; 4];
+    let mut criteria = [0; 4];
 
     let count = (0..matrix[0].len() as isize)
-        .flat_map(|x| (0..matrix.len() as isize).map(move |y| (x, y)))
+        .flat_map(|x| (0..matrix.len() as isize)
+            .map(move |y| (x, y)))
         .flat_map(|(x, y)| {
             [
                 [(x, y), (x + 1, y - 1), (x + 2, y - 2), (x + 3, y - 3)], 
@@ -209,8 +210,8 @@ fn day_four_part_one() {
                     .and_then(|row| row.get(*x as usize).copied())
                     .unwrap_or_default()
             });
-            word.fill_with(|| iter.next().unwrap());
-            &word == b"XMAS" || &word == b"SAMX"
+            criteria.fill_with(|| iter.next().unwrap());
+            &criteria == b"XMAS" || &criteria == b"SAMX"
         })
     .count();
     println!("0x78A5A051: {:?}", count);
