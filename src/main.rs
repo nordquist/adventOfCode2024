@@ -1,3 +1,4 @@
+use core::include_bytes;
 use core::result::Result::Ok;
 use std::fs::File;
 use std::io::prelude::*;
@@ -12,6 +13,7 @@ fn main() {
     day_two_part_two();
     day_three_part_one();
     day_three_part_two();
+    day_four_part_one();
 }
 
 fn day_one_part_one() {
@@ -183,6 +185,37 @@ fn day_three_part_two() {
     }    
 }
 
+fn day_four_part_one() {
+    let bytes = import_bytes();
+    let matrix = bytes
+        .split(|&c| c == b'\n')
+        .collect::<Vec<_>>();
+
+    let mut word = [0; 4];
+
+    let count = (0..matrix[0].len() as isize)
+        .flat_map(|x| (0..matrix.len() as isize).map(move |y| (x, y)))
+        .flat_map(|(x, y)| {
+            [
+                [(x, y), (x + 1, y - 1), (x + 2, y - 2), (x + 3, y - 3)], 
+                [(x, y), (x + 1, y), (x + 2, y), (x + 3, y)],
+                [(x, y), (x + 1, y + 1), (x + 2, y + 2), (x + 3, y + 3)],
+                [(x, y), (x, y + 1), (x, y + 2), (x, y + 3)],
+            ]
+        })
+        .filter(|coords| {
+            let mut iter = coords.iter().map(|(x, y)| {
+                matrix.get(*y as usize)
+                    .and_then(|row| row.get(*x as usize).copied())
+                    .unwrap_or_default()
+            });
+            word.fill_with(|| iter.next().unwrap());
+            &word == b"XMAS" || &word == b"SAMX"
+        })
+    .count();
+    println!("0x78A5A051: {:?}", count);
+}
+
 fn check_report_safety(report: Vec<i32>) -> io::Result<Vec<(i32, i32)>> {
     let mut unsafe_tuples: Vec<(i32, i32)> = Vec::new();
     let direction = report[0] - report[1];
@@ -252,4 +285,8 @@ fn import_multiplications() -> io::Result<String> {
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
     Ok(contents)
+}
+
+fn import_bytes() -> &'static [u8] {
+    return include_bytes!("input_day_four");
 }
